@@ -1,0 +1,6 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "prettier" // prettier를 extends에 추가
+  ]
+}
