@@ -1,3 +1,5 @@
+require('dotenv').config(); // .env 파일 로드
+
 const express = require('express');
 const axios = require('axios');
 const htmlMinifier = require('html-minifier');
