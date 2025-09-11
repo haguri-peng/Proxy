@@ -2,6 +2,8 @@ require('dotenv').config(); // .env 파일 로드
 
 const express = require('express');
 const axios = require('axios');
+const https = require('https');
+const fs = require('fs');
 const htmlMinifier = require('html-minifier');
 
 const app = express();
@@ -29,7 +31,12 @@ app.get('/proxy', async (req, res) => {
   try {
     const url = req.query.url; // 쿼리로 포털 URL 전달 (예: /proxy?url=https://portal.com/data)
     const decodedUrl = decodeURIComponent(url); // 디코딩
+
     console.info(`decodedUrl: ${decodedUrl}`);
+
+    if (!decodedUrl.startsWith('http')) {
+      return res.status(400).json({ error: 'Invalid URL' });
+    }
 
     const response = await axios.get(decodedUrl);
 
@@ -46,9 +53,16 @@ app.get('/proxy', async (req, res) => {
       res.json(response.data);
     }
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch data' });
+    res.status(500).json({ error: `Failed to fetch data: ${error.message}` });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const httpsOptions = {
+  key: fs.readFileSync('path/to/your-dns-key.pem'),
+  cert: fs.readFileSync('path/to/your-dns-crt.pem'),
+};
+
+https.createServer(httpsOptions, app).listen(PORT, () => {
+  console.log(`HTTPS Server running on port ${PORT}`);
+});
